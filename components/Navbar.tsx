@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Menu, X, AlertTriangle, Phone } from 'lucide-react';
+import { Menu, X, AlertTriangle } from 'lucide-react';
 import Logo from './Logo';
 import { SiteSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../constants';
+import { supabase } from '../lib/supabase';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,19 +12,37 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const saved = localStorage.getItem('voltcom_settings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Check for expiry on promo message
-      if (parsed.promoActive && parsed.promoExpiry) {
-        const expiryDate = new Date(parsed.promoExpiry);
-        if (new Date() > expiryDate) {
-          parsed.promoActive = false;
-          localStorage.setItem('voltcom_settings', JSON.stringify(parsed));
+    const fetchSettings = async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error || !data) return;
+
+      // Check promo expiry
+      if (data.promo_active && data.promo_expiry) {
+        if (new Date() > new Date(data.promo_expiry)) {
+          data.promo_active = false;
         }
       }
-      setSettings(parsed);
-    }
+
+      setSettings({
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        hours: data.hours,
+        license: data.license,
+        promoActive: data.promo_active,
+        promoText: data.promo_text,
+        promoExpiry: data.promo_expiry ?? '',
+        emergencyActive: data.emergency_active,
+        showCategories: data.show_categories,
+      });
+    };
+
+    fetchSettings();
   }, [location]);
 
   const navLinks = [
@@ -44,7 +62,7 @@ const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* Promo Banner - White Background, Black Text */}
+      {/* Promo Banner */}
       {settings.promoActive && !settings.emergencyActive && (
         <div className="bg-white text-voltcomCharcoal border-b border-voltcomRed/20 py-2.5 px-4 text-center text-[10px] md:text-xs font-black uppercase tracking-[0.15em] shadow-sm">
           {settings.promoText}
@@ -55,25 +73,25 @@ const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <Link to="/" className="flex items-center">
-              <Logo size="md" className="h-10 w-auto" />
+              <Logo size="md" />
             </Link>
 
             <div className="hidden md:flex space-x-8 items-center">
               {navLinks.map((link) => (
-                <NavLink 
-                  key={link.path} 
+                <NavLink
+                  key={link.path}
                   to={link.path}
-                  className={({ isActive }) => 
-                    isActive 
-                      ? "text-voltcomRed border-b-2 border-voltcomRed font-bold pb-1" 
-                      : "text-voltcomCharcoal hover:text-voltcomRed transition-colors font-semibold"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'text-voltcomRed border-b-2 border-voltcomRed font-bold pb-1'
+                      : 'text-voltcomCharcoal hover:text-voltcomRed transition-colors font-semibold'
                   }
                 >
                   {link.name}
                 </NavLink>
               ))}
-              <Link 
-                to="/contact" 
+              <Link
+                to="/contact"
                 className="bg-voltcomRed text-white px-6 py-2 rounded-sm font-bold hover:bg-voltcomCharcoal transition-all uppercase text-sm tracking-wide"
               >
                 Soumission Gratuite
@@ -91,17 +109,19 @@ const Navbar: React.FC = () => {
         {isOpen && (
           <div className="md:hidden bg-white border-t border-gray-100 py-4 px-4 space-y-4 shadow-lg absolute w-full animate-in fade-in slide-in-from-top-2">
             {navLinks.map((link) => (
-              <NavLink 
-                key={link.path} 
+              <NavLink
+                key={link.path}
                 to={link.path}
                 onClick={() => setIsOpen(false)}
-                className={({ isActive }) => `block py-2 text-sm font-bold tracking-widest ${isActive ? 'text-voltcomRed' : 'text-voltcomCharcoal'}`}
+                className={({ isActive }) =>
+                  `block py-2 text-sm font-bold tracking-widest ${isActive ? 'text-voltcomRed' : 'text-voltcomCharcoal'}`
+                }
               >
                 {link.name}
               </NavLink>
             ))}
-            <Link 
-              to="/contact" 
+            <Link
+              to="/contact"
               onClick={() => setIsOpen(false)}
               className="block bg-voltcomRed text-white text-center py-4 rounded-sm font-black text-sm tracking-widest"
             >
