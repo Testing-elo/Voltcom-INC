@@ -1,47 +1,59 @@
-
 import React from 'react';
 
 const Logo: React.FC<{ className?: string; size?: 'sm' | 'md' | 'lg' }> = ({ className = '', size = 'md' }) => {
   const scales = {
-    sm: { h: 32, w: 160 },
-    md: { h: 48, w: 240 },
-    lg: { h: 64, w: 320 }
+    sm: { h: 28 },
+    md: { h: 40 },
+    lg: { h: 56 }
   };
   const config = scales[size];
 
   return (
-    <div className={`flex items-center ${className}`} style={{ width: 'auto', height: config.h }}>
+    <div className={`flex items-center ${className}`} style={{ height: config.h, width: 'auto' }}>
       <svg
-        viewBox="0 0 420 80"
+        viewBox="0 0 380 70"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="h-full w-auto"
         preserveAspectRatio="xMinYMid meet"
       >
-        {/* The Red Line: Short flat start -> V-shape -> Long flat line over text */}
+        {/* Red line: short flat -> V dip (forms the "V" of VOLTCOM) -> long flat over rest of text */}
+        {/* The V dip sits under/through the "V" letter area, starting ~x=10 */}
         <path
-          d="M 5 32 H 35 L 60 70 L 85 32 H 410"
+          d="M 2 22 H 18 L 36 52 L 54 22 H 375"
           stroke="#E8322A"
-          strokeWidth="6"
+          strokeWidth="4.5"
           strokeLinecap="butt"
           strokeLinejoin="miter"
         />
-        
-        {/* The Text "OLTCOM INC." positioned exactly like the logo */}
+
+        {/* Full text "VOLTCOM Inc." — V is dark just like the other letters */}
+        {/* The V letter sits between x=12 and x=54, aligning with the red V dip */}
         <text
-          x="95"
-          y="70"
+          x="12"
+          y="48"
           fill="#2D2D2D"
           style={{
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 600,
-            fontSize: '44px',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase'
+            fontFamily: "'Poppins', 'Arial', sans-serif",
+            fontWeight: 700,
+            fontSize: '38px',
+            letterSpacing: '0.05em',
           }}
         >
-          <tspan>OLTCOM</tspan>
-          <tspan dx="25" style={{ fontWeight: 400 }}>INC.</tspan>
+          VOLTCOM
+        </text>
+        <text
+          x="232"
+          y="48"
+          fill="#2D2D2D"
+          style={{
+            fontFamily: "'Poppins', 'Arial', sans-serif",
+            fontWeight: 400,
+            fontSize: '38px',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {' '}Inc.
         </text>
       </svg>
     </div>
