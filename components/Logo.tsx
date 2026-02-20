@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Logo: React.FC<{ className?: string; size?: 'sm' | 'md' | 'lg' }> = ({ className = '', size = 'md' }) => {
-  const heights = { sm: 28, md: 40, lg: 56 };
+  const heights: Record<string, number> = { sm: 28, md: 40, lg: 56 };
 
   return (
     <img
