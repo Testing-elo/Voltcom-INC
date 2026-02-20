@@ -1,18 +1,40 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { DEFAULT_SETTINGS } from '../constants';
 import { SiteSettings } from '../types';
 import Logo from './Logo';
+import { supabase } from '../lib/supabase';
 
 const Footer: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const location = useLocation();
 
   useEffect(() => {
-    const saved = localStorage.getItem('voltcom_settings');
-    if (saved) setSettings(JSON.parse(saved));
+    const fetchSettings = async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+      if (error || !data) return;
+
+      setSettings({
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        hours: data.hours,
+        license: data.license,
+        promoActive: data.promo_active,
+        promoText: data.promo_text,
+        promoExpiry: data.promo_expiry ?? '',
+        emergencyActive: data.emergency_active,
+        showCategories: data.show_categories,
+      });
+    };
+
+    fetchSettings();
   }, [location]);
 
   return (
@@ -21,7 +43,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <div>
             <div className="mb-6 -ml-2">
-              <Logo size="sm" className="brightness-0 invert h-8 w-auto opacity-90" />
+              <Logo size="sm" className="brightness-0 invert opacity-90" />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
               Votre partenaire électrique de confiance à Montréal. Travaux certifiés RBQ et membre de la CMEQ.
