@@ -1,9 +1,34 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
-import { REVIEWS } from '../constants';
+import { supabase } from '../lib/supabase';
+
+interface Review {
+  id: string;
+  rating: number;
+  quote: string;
+  author: string;
+  neighbourhood: string;
+}
 
 const Reviews: React.FC = () => {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false });
+
+      if (data) setReviews(data);
+      setLoading(false);
+    };
+
+    fetchReviews();
+  }, []);
+
   return (
     <div className="animate-in fade-in">
       {/* Hero */}
@@ -21,37 +46,53 @@ const Reviews: React.FC = () => {
             <span className="bg-white text-voltcomRed px-3 py-1 rounded-sm">5.0 / 5</span>
             <span>⭐ 298 avis Google</span>
           </div>
-          <button className="border-2 border-white text-white px-8 py-3 rounded-sm font-black hover:bg-white hover:text-voltcomRed transition-all uppercase tracking-widest">
+          <a
+            href="https://g.page/r/voltcom-inc/review"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border-2 border-white text-white px-8 py-3 rounded-sm font-black hover:bg-white hover:text-voltcomRed transition-all uppercase tracking-widest"
+          >
             Laisser un avis
-          </button>
+          </a>
         </div>
       </section>
 
       {/* Reviews Grid */}
       <section className="py-20 bg-white px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {REVIEWS.map((review) => (
-            <div key={review.id} className="p-8 border border-gray-100 bg-voltcomLightGray rounded-lg shadow-sm flex flex-col h-full relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 text-voltcomRed opacity-5 group-hover:rotate-12 transition-transform">
-                <MessageSquare size={100} />
-              </div>
-              
-              <div className="flex mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={18} className="text-voltcomRed fill-current mr-1" />
-                ))}
-              </div>
-              
-              <blockquote className="text-voltcomCharcoal font-medium italic mb-6 leading-relaxed flex-grow opacity-90 text-sm">
-                "{review.quote}"
-              </blockquote>
-              
-              <div className="flex flex-col">
-                <span className="font-black text-voltcomCharcoal uppercase text-sm tracking-tight">{review.author}</span>
-                <span className="text-[10px] font-black uppercase text-voltcomCharcoal opacity-50 tracking-widest">{review.neighbourhood}</span>
-              </div>
+        <div className="max-w-7xl mx-auto">
+          {loading ? (
+            <div className="text-center py-20 text-voltcomCharcoal font-black uppercase tracking-widest text-xs opacity-40">
+              Chargement...
             </div>
-          ))}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="p-8 border border-gray-100 bg-voltcomLightGray rounded-lg shadow-sm flex flex-col h-full relative overflow-hidden group"
+                >
+                  <div className="absolute -right-4 -top-4 text-voltcomRed opacity-5 group-hover:rotate-12 transition-transform">
+                    <MessageSquare size={100} />
+                  </div>
+
+                  <div className="flex mb-4">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} size={18} className="text-voltcomRed fill-current mr-1" />
+                    ))}
+                  </div>
+
+                  <blockquote className="text-voltcomCharcoal font-medium italic mb-6 leading-relaxed flex-grow opacity-90 text-sm">
+                    "{review.quote}"
+                  </blockquote>
+
+                  <div className="flex flex-col">
+                    <span className="font-black text-voltcomCharcoal uppercase text-sm tracking-tight">{review.author}</span>
+                    <span className="text-[10px] font-black uppercase text-voltcomCharcoal opacity-50 tracking-widest">{review.neighbourhood}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
